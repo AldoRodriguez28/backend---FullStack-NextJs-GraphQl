@@ -1,7 +1,11 @@
+
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./db/schemas");
 const resolvers = require("./db/resolvers");
 const connectDB = require("./config/db");
+
+
+
 require("dotenv").config({ path: "variables.env" });
 const jwt = require("jsonwebtoken");
 
@@ -11,6 +15,9 @@ connectDB();
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  cors: {
+    origin: ["http://localhost:4000", "http://localhost:4000/graphql"]
+  },
   context: async ({ req }) => {
     const token = req.headers["authorization"] || "";
     if (token) {
@@ -25,6 +32,7 @@ const server = new ApolloServer({
     }
   },
 });
+
 
 server.listen().then(({ url }) => {
   console.log(`Server ready at ${url}`);
