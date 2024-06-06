@@ -169,13 +169,22 @@ const resolvers = {
 
     //Clientes
     nuevoCliente: async (_, { input }) => {
+      const {curp} = input;
+
+      const existeCliente = await Cliente.findOne({ curp });
+      if (existeCliente) {
+        throw new Error(
+          "El cliente ya ha sido dado de alta ya que el curp ya se encuentra registrado"
+        );
+      }
+
       try {
         //guardar en base de datos
         const cliente = new Cliente(input);
         cliente.save(); //guardando...
         return cliente;
       } catch (error) {
-        console.log(error);
+        console.log(error.graphQLErrors);
       }
     },
     actualizarCliente: async (_, { id, input }) => {
@@ -252,7 +261,7 @@ const resolvers = {
           throw new Error("gestion no encontrada");
         }
 
-        const gestiónEliminada = await Gestion.findByIdAndDelete({ _id: id });
+        const gestionEliminada = await Gestion.findByIdAndDelete({ _id: id });
         return `Se elimino con exito la gestion con el id:${gestion.id}`;
       } catch (error) {
         console.log(error);

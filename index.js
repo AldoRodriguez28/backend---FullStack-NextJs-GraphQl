@@ -16,7 +16,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   cors: {
-    origin: ["http://localhost:4000", "http://localhost:4000/graphql"]
+    origin: ["http://localhost:3000", "https://studio.apollographql.com"]
   },
   context: async ({ req }) => {
     const token = req.headers["authorization"] || "";
