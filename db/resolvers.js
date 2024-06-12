@@ -9,23 +9,19 @@ const jwt = require("jsonwebtoken");
 
 const crearToken = (usuario, secretKey, expiresIn) => {
   console.log(usuario);
-  const { id, email, nombre, apellido } = usuario;
-  return jwt.sign({ id }, secretKey, { expiresIn });
+ const { id, email, nombre, apellido, rol } = usuario;
+  return jwt.sign({id, email, nombre, apellido, rol}, secretKey, { expiresIn });
 };
 
 //Resolvers
 const resolvers = {
   Query: {
     //Usuarios
-    obtenerUsuario: async (_, { token }, ctx) => {
-      const usuarioId = await jwt.verify(token, process.env.SECRETA);
-      if (!usuarioId) throw new Error("Token invalido");
-      const usuarioDB = await Usuario.findById(usuarioId.id);
-      console.log(usuarioDB);
-      return usuarioDB;
+    obtenerUsuario: async (_, {}, ctx) => {
+      console.log('desde obtenerUsuario',ctx);
+      return ctx.usuario;
     },
-    obtenerUsuarios: async (_,{ token },ctx) => {
-      console.log("obtenerUsuarios", token);
+    obtenerUsuarios: async (_,{},ctx) => {
       // const usuarioId = await jwt.verify(token, process.env.SECRETA);
       // if (!usuarioId) throw new Error("Token invalido");
       const usuarios = await Usuario.find({});
@@ -33,10 +29,13 @@ const resolvers = {
       return usuarios;
     },
     //Clientes
-    obtenerClientes: async () => {
-      const clientes = await Cliente.find({});
-      console.log(clientes);
-      return clientes;
+    obtenerClientes: async (_,{},ctx) => {
+        try {
+          const clientes = await Cliente.find({});
+          return clientes;
+        } catch (error) {
+          console.error(error)
+        }
     },
     obtenerCliente: async (_, { id }, ctx) => {
       // const usuarioId = await jwt.verify(token, process.env.SECRETA);
@@ -45,12 +44,26 @@ const resolvers = {
       return ClienteDB;
     },
     //Gestiones
-    obtenerGestiones: async () => {
-      const usuarioId = await jwt.verify(token, process.env.SECRETA);
-      if (!usuarioId) throw new Error("Token invalido");
-      const gestiones = await Gestion.find({});
-      console.log(gestiones);
-      return gestiones;
+    obtenerGestiones: async (_,{},ctx) => {
+      // 1.- Obtener el rol
+      const rol = ctx.usuario.rol;
+      if(rol == 'ADMINISTRADOR'){
+        try {
+          const gestiones = await Gestion.find({});
+          console.log(gestiones.length)
+          return gestiones;
+        } catch (error) {
+          console.log(error);
+        }
+      }else{
+        try {
+          const gestiones = await Gestion.find({ usuarioId: ctx.usuario.id.toString() });
+          console.log(gestiones.length)
+          return gestiones;
+        } catch (error) {
+          console.log(error);
+        }
+      }
     },
     obtenerGestionById: async (_, { id }, ctx) => {
       // const usuarioId = await jwt.verify(token, process.env.SECRETA);

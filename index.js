@@ -19,14 +19,13 @@ const server = new ApolloServer({
     origin: ["http://localhost:3000", "https://studio.apollographql.com"]
   },
   context: async ({ req }) => {
-    const token = req.headers["authorization"] || "";
+    const token = req.headers["authorization"] || '';
     if (token) {
       try {
-        //const usuario = await jwt.verify(token, process.env.SECRETA);
-        const usuario = await jwt.verify(token,'secretkey');
+        const usuario = await jwt.verify(token.replace('Bearer ', ''),'secretkey');
         return { usuario };
       } catch (error) {
-        console.log('hubo un error:',error);
+        //console.log('hubo un error:',error);
         throw new Error(error)
       }
     }
