@@ -18,14 +18,12 @@ const resolvers = {
   Query: {
     //Usuarios
     obtenerUsuario: async (_, {}, ctx) => {
-      console.log('desde obtenerUsuario',ctx);
       return ctx.usuario;
     },
     obtenerUsuarios: async (_,{},ctx) => {
       // const usuarioId = await jwt.verify(token, process.env.SECRETA);
       // if (!usuarioId) throw new Error("Token invalido");
       const usuarios = await Usuario.find({});
-      console.log(usuarios);
       return usuarios;
     },
     //Clientes
@@ -237,18 +235,22 @@ const resolvers = {
         //Verificar si el cliente existe por medio de su matricula
         const cliente = await Cliente.findOne({ matricula });
         if (!cliente) {
-          throw new Error(
-            `No existe un afiliado con la matricula ${matricula}`
-          );
+        const error =  new Error(`No existe un cliente con la matricula  ${matricula}`);
+        return error;
         }
 
         //Asignamos al cliente a la gestión
         input.clienteId = cliente.id;
+        input.nombreCliente = cliente.nombre
 
         //guardar en base de datos
-        const gestion = new Gestion(input);
-        gestion.save(); //guardando...
-        return gestion;
+        try {
+          const gestion = new Gestion(input);
+          const resultado = await gestion.save();
+          return resultado;          
+        } catch (error) {
+           console.log(error)
+        }
       } catch (error) {
         console.log(error);
       }

@@ -1,4 +1,10 @@
 const mongoose = require("mongoose");
+const Counter = require('./Counter');
+
+const CounterSchema = mongoose.Schema({
+  _id:{type: String, required:true},
+  seq:{type: Number, default: 0}
+});
 
 const GestionesSchema = mongoose.Schema({
       clienteId:{
@@ -10,6 +16,14 @@ const GestionesSchema = mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId, 
         required: true,
         ref: "Usuario",
+      },
+      folio:{
+        type: Number,
+        unique: true,
+      },
+      nombreCliente:{
+        type: String,
+        required: true,
       },
       lugar:{
         type: String,
@@ -36,4 +50,21 @@ const GestionesSchema = mongoose.Schema({
         default: Date.now(),
       },
 });
+
+GestionesSchema.pre("save",async function (next){
+  const doc = this;
+
+  try {
+    const counter = await Counter.findByIdAndUpdate(
+      {_id: "folio"},
+      {$inc: {seq:1}},
+      {new:true, upsert:true}
+    );
+    doc.folio = counter.seq;
+    next();
+  } catch (error) {
+    next(error);
+  }
+ 
+})
 module.exports = mongoose.model("Gestion", GestionesSchema);

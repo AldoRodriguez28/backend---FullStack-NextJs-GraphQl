@@ -21,6 +21,8 @@ const typeDefs = gql`
   type Gestion {
     id: ID
     clienteId: String
+    folio: String
+    nombreCliente: String
     usuarioId: String
     lugar: String
     tipo: String
